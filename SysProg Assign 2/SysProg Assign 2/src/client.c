@@ -1,15 +1,114 @@
+//
+// FILE               : client.c
+// PROJECT            : SysProg Assing 2
+// PROGRAMMER		  : Josiah Williams
+// FIRST VERSION      : 2025-11-08
+// DESCRIPTION        : This file is where client.c is located. The purpose of client.c is to gather infomration about a trip and clients then send the information
+//                    : to the server using message queues and shared memory.
+// 
+
 #include "common.h"
+
+void cleanup(void);
+int validate_name(char *name);
+int validate_age(int age);
+void get_client_data(ClientMessage *msg);
 
 int msgid = -1;
 int shmid = -1;
 int semid = -1;
 SharedMemory *shm = NULL;
 
+int main(void) {
+    ClientMessage msg;
+    char choice;
+    
+    printf("Client (Writer) - Starting...\n");
+    
+    //Get shared memory
+    shmid = shmget(SHM_KEY, sizeof(SharedMemory), 0666);
+    if (shmid == -1) {
+        perror("shmget - Please start the shared memory manager first!");
+        exit(1);
+    }
+    
+    //Attach shared memory
+    shm = (SharedMemory *)shmat(shmid, NULL, 0);
+    if (shm == (void *)-1) {
+        perror("shmat");
+        exit(1);
+    }
+    
+    //Get semaphore
+    semid = get_semaphore(SEM_KEY);
+    if (semid == -1) {
+        printf("Semaphore not found! Please start the shared memory manager first.\n");
+        cleanup();
+        exit(1);
+    }
+    
+    //Get message queue
+    msgid = msgget(MSG_KEY, 0666);
+    if (msgid == -1) {
+        perror("msgget - Please start the server first!");
+        cleanup();
+        exit(1);
+    }
+    
+    printf("Connected to shared memory and message queue.\n");
+    
+    while (1) {
+
+        //Get client data
+        get_client_data(&msg);
+        
+        //Send message to server
+        if (msgsnd(msgid, &msg, sizeof(ClientMessage) - sizeof(long), 0) == -1) {
+            perror("msgsnd");
+            cleanup();
+            exit(1);
+        }
+        
+        printf("\nClient data sent successfully!\n");
+        
+        //Ask if more data needs to be entered
+        printf("\nEnter more client data? (y/n): ");
+        scanf(" %c", &choice);
+        getchar();
+        
+        if (choice != 'y' && choice != 'Y') {
+            break;
+        }
+    }
+    
+    printf("Exiting client program...\n");
+    cleanup();
+    
+    return 0;
+}
+
+// FUNCTION : cleanup
+// DESCRIPTION :
+// This function cleans up the sharedmed
+// PARAMETERS :
+// NONE
+// RETURNS: 
+// NONE
+//
 void cleanup() {
     if (shm != NULL) {
         shmdt(shm);
     }
 }
+
+// FUNCTION : validate_name
+// DESCRIPTION :
+// This function checks to see if the contains letters
+// PARAMETERS :
+// char *name : checks to see if the user entered the valid name
+// RETURNS: 
+// True or false
+//
 
 int validate_name(char *name) {
     if (strlen(name) == 0) {
@@ -26,9 +125,27 @@ int validate_name(char *name) {
     return 1;
 }
 
+// FUNCTION : validate_age
+// DESCRIPTION :
+// This function checks an age range for a valid age
+// PARAMETERS :
+// int age : checks to see if the user entered the valid age
+// RETURNS: 
+// True or false
+//
+
 int validate_age(int age) {
     return age > 0 && age < 150;
 }
+
+// FUNCTION : get_client_data
+// DESCRIPTION :
+// This function get the information about client and trip from the user
+// PARAMETERS :
+// ClientMessage *msg : a struct to store the clients information
+// RETURNS: 
+// NONE
+//
 
 void get_client_data(ClientMessage *msg) {
     char fullName[MAX_NAME * 2];
@@ -168,72 +285,4 @@ void get_client_data(ClientMessage *msg) {
     }
     
     msg->mtype = 1;
-}
-
-int main(void) {
-    ClientMessage msg;
-    char choice;
-    
-    printf("Client (Writer) - Starting...\n");
-    
-    //Get shared memory
-    shmid = shmget(SHM_KEY, sizeof(SharedMemory), 0666);
-    if (shmid == -1) {
-        perror("shmget - Please start the shared memory manager first!");
-        exit(1);
-    }
-    
-    //Attach shared memory
-    shm = (SharedMemory *)shmat(shmid, NULL, 0);
-    if (shm == (void *)-1) {
-        perror("shmat");
-        exit(1);
-    }
-    
-    //Get semaphore
-    semid = get_semaphore(SEM_KEY);
-    if (semid == -1) {
-        printf("Semaphore not found! Please start the shared memory manager first.\n");
-        cleanup();
-        exit(1);
-    }
-    
-    //Get message queue
-    msgid = msgget(MSG_KEY, 0666);
-    if (msgid == -1) {
-        perror("msgget - Please start the server first!");
-        cleanup();
-        exit(1);
-    }
-    
-    printf("Connected to shared memory and message queue.\n");
-    
-    while (1) {
-
-        //Get client data
-        get_client_data(&msg);
-        
-        //Send message to server
-        if (msgsnd(msgid, &msg, sizeof(ClientMessage) - sizeof(long), 0) == -1) {
-            perror("msgsnd");
-            cleanup();
-            exit(1);
-        }
-        
-        printf("\nClient data sent successfully!\n");
-        
-        //Ask if more data needs to be entered
-        printf("\nEnter more client data? (y/n): ");
-        scanf(" %c", &choice);
-        getchar();
-        
-        if (choice != 'y' && choice != 'Y') {
-            break;
-        }
-    }
-    
-    printf("Exiting client program...\n");
-    cleanup();
-    
-    return 0;
 }
