@@ -7,7 +7,7 @@
 //                    : to the server using message queues and shared memory.
 // 
 
-#include "common.h"
+#include "ipc_shared.h"
 
 void cleanup(void);
 int validate_name(char *name);
@@ -26,7 +26,7 @@ int main(void) {
     printf("Client (Writer) - Starting...\n");
     
     //Get shared memory
-    shmid = shmget(SHM_KEY, sizeof(SharedMemory), 0666);
+    shmid = shmget(SHM_KEY, sizeof(SharedMemory), PERMISSIONS);
     if (shmid == -1) {
         perror("shmget - Please start the shared memory manager first!");
         exit(1);
@@ -48,7 +48,7 @@ int main(void) {
     }
     
     //Get message queue
-    msgid = msgget(MSG_KEY, 0666);
+    msgid = msgget(MSG_KEY, PERMISSIONS);
     if (msgid == -1) {
         perror("msgget - Please start the server first!");
         cleanup();
@@ -135,7 +135,7 @@ int validate_name(char *name) {
 //
 
 int validate_age(int age) {
-    return age > 0 && age < 150;
+return age >= MIN_AGE && age <= MAX_AGE;
 }
 
 // FUNCTION : get_client_data
@@ -148,7 +148,8 @@ int validate_age(int age) {
 //
 
 void get_client_data(ClientMessage *msg) {
-    char fullName[MAX_NAME * 2];
+
+    char fullName[MAX_FULLNAME];
     char *token;
     
     //Get first and last name
@@ -193,7 +194,7 @@ void get_client_data(ClientMessage *msg) {
         getchar();
         
         if (!validate_age(msg->age)) {
-            printf("Invalid age! Please enter a value between 1 and 149.\n");
+        printf("Invalid age! Please enter a value between %d and %d.\n", MIN_AGE, MAX_AGE);
             continue;
         }
         
@@ -237,7 +238,7 @@ void get_client_data(ClientMessage *msg) {
     while (1) {
         printf("Select trip number: ");
         if (scanf("%d", &tripChoice) != 1) {
-            printf("Invalid input!\n");
+        printf("Invalid input! Please enter a number.\n");
             while (getchar() != '\n') {
                 continue;
             }
@@ -245,7 +246,7 @@ void get_client_data(ClientMessage *msg) {
         }
         getchar();
         
-        if (tripChoice < 1 || tripChoice > shm->tripCount || 
+        if (tripChoice < MIN_TRIP || tripChoice > shm->tripCount || 
             !shm->trips[tripChoice - 1].active) {
             printf("Invalid trip selection!\n");
             continue;
@@ -266,15 +267,14 @@ void get_client_data(ClientMessage *msg) {
         printf("Enter number of people: ");
         if (scanf("%d", &msg->numPeople) != 1) {
             printf("Invalid input!\n");
-            while (getchar() != '\n') {
+            while (getchar() != '\n');
                 continue;
-            }
             
         }
         getchar();
         
-        if (msg->numPeople < 1) {
-            printf("Number of people must be at least 1!\n");
+        if (msg->numPeople < MIN_PEOPLE) {
+               printf("Number of people must be at least %d!\n", MIN_PEOPLE);
             continue;
         }
         

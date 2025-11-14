@@ -1,4 +1,4 @@
-#include "common.h"
+#include "ipc_shared.h"
 
 int msgid = -1;
 float totalPrice = 0.0;
@@ -52,7 +52,7 @@ int main(void) {
     printf("Server (Reader) - Starting...\n");
     
     //Create message queue
-    msgid = msgget(MSG_KEY, IPC_CREAT | 0666);
+    msgid = msgget(MSG_KEY, IPC_CREAT | PERMISSIONS);
     if (msgid == -1) {
         perror("msgget");
         exit(1);

@@ -1,5 +1,5 @@
 
-#include "common.h"
+#include "ipc_shared.h"
 
 //Lock semaphore (wait)
 void sem_lock(int semid) {
@@ -33,7 +33,7 @@ int create_semaphore(key_t key) {
     union semun arg;
     
     //Create semaphore
-    semid = semget(key, 1, IPC_CREAT | IPC_EXCL | 0666);
+    semid = semget(key, 1, IPC_CREAT | IPC_EXCL | PERMISSIONS);
     if (semid == -1) {
         perror("semget create");
         return -1;
@@ -53,7 +53,7 @@ int create_semaphore(key_t key) {
 int get_semaphore(key_t key) {
     int semid;
     
-    semid = semget(key, 1, 0666);
+    semid = semget(key, 1, PERMISSIONS);
     if (semid == -1) {
         perror("semget get");
         return -1;

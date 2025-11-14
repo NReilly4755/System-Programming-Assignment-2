@@ -1,5 +1,5 @@
-#ifndef COMMON_H
-#define COMMON_H
+#ifndef IPC_SHARED_H
+#define IPC_SHARED_H
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -12,14 +12,21 @@
 #include <signal.h>
 #include <errno.h>
 #include <ctype.h>
-
 // Constants
-#define MAX_TRIPS 10
 #define MAX_NAME 50
+#define MAX_AGE 150
+#define MIN_AGE 1
+#define MIN_PEOPLE 1
+#define MIN_TRIP 1
+#define MAX_TRIPS 10
+#define MSGTYPE_CLIENT 1
+#define MAX_FULLNAME (MAX_NAME*2)
 #define MAX_ADDRESS 100
 #define SHM_KEY 0x1234
 #define SEM_KEY 0x5678
 #define MSG_KEY 0x9ABC
+#define PERMISSIONS 0666
+
 
 // Trip structure for shared memory
 typedef struct {
@@ -60,4 +67,4 @@ int create_semaphore(key_t key);
 int get_semaphore(key_t key);
 void remove_semaphore(int semid);
 
-#endif // COMMON_H
+#endif // IPC_SHARED_H

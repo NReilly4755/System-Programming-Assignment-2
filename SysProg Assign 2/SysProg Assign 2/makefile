@@ -1,12 +1,12 @@
 # Main Target
-bin/shm_manager : obj/shm_manager.o obj/common.o
-	$(CC) obj/shm_manager.o obj/common.o -o bin/shm_manager
+bin/shm_manager : obj/shm_manager.o obj/sem_manager.o
+	$(CC) obj/shm_manager.o obj/sem_manager.o -o bin/shm_manager
 
-bin/server : obj/server.o obj/common.o
-	$(CC) obj/server.o obj/common.o -o bin/server
+bin/server : obj/server.o obj/sem_manager.o
+	$(CC) obj/server.o obj/sem_manager.o -o bin/server
 
-bin/client : obj/client.o obj/common.o
-	$(CC) obj/client.o obj/common.o -o bin/client
+bin/client : obj/client.o obj/sem_manager.o
+	$(CC) obj/client.o obj/sem_manager.o -o bin/client
 
 # Object files
 obj/shm_manager.o : src/shm_manager.c
@@ -18,8 +18,8 @@ obj/server.o : src/server.c
 obj/client.o : src/client.c
 	$(CC) -c src/client.c -I inc -o obj/client.o
 
-obj/common.o : src/common.c
-	$(CC) -c src/common.c -I inc -o obj/common.o
+obj/sem_manager.o : src/sem_manager.c
+	$(CC) -c src/sem_manager.c -I inc -o obj/sem_manager.o
 
 # Default target
 all: bin/shm_manager bin/server bin/client
