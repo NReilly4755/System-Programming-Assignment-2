@@ -12,6 +12,7 @@
 #include <signal.h>
 #include <errno.h>
 #include <ctype.h>
+
 // Constants
 #define MAX_NAME 50
 #define MAX_AGE 150
