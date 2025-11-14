@@ -1,3 +1,11 @@
+//
+// FILE               : client.c
+// PROJECT            : SysProg Assing 2
+// PROGRAMMER		  : Rodrigo P Gomes
+// FIRST VERSION      : 2025-11-08
+// DESCRIPTION        : This file is where client.c is located. The purpose of client.c is to gather infomration about a trip and clients then send the information
+//                    : to the server using message queues and shared memory.
+//
 
 #include "ipc_shared.h"
 
@@ -8,6 +16,7 @@ void sem_lock(int semid) {
     sb.sem_op = -1; // P operation (wait/lock)
     sb.sem_flg = 0;
     
+    //Performing the semaphore operation
     if (semop(semid, &sb, 1) == -1) {
         perror("semop lock");
         exit(1);
@@ -21,6 +30,7 @@ void sem_unlock(int semid) {
     sb.sem_op = 1;
     sb.sem_flg = 0;
     
+    //Performing the semaphore operation
     if (semop(semid, &sb, 1) == -1) {
         perror("semop unlock");
         exit(1);
@@ -53,6 +63,7 @@ int create_semaphore(key_t key) {
 int get_semaphore(key_t key) {
     int semid;
     
+    //Get the semaphore
     semid = semget(key, 1, PERMISSIONS);
     if (semid == -1) {
         perror("semget get");
